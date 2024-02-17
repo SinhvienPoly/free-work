@@ -1,0 +1,89 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id          String        @id @default(cuid())
+    name        String
+    fullName    String
+    health      String
+    phone       String
+    email       String?       @unique
+    password    String
+    avatarId    String?
+    age         DateTime
+    avatar      String
+    active      Boolean       @default(true)
+    skillOnUser SkillOnUser[]
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    Account     Account[]
+    Session     Session[]
+}
+
+model SkillOnUser {
+    id      String @id @default(cuid())
+    userId  String
+    user    User   @relation(fields: [userId], references: [id])
+    skillId String
+    skill   Skill  @relation(fields: [skillId], references: [id])
+}
+
+model Skill {
+    id          String        @id @default(cuid())
+    name        String
+    skillOnUser SkillOnUser[]
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+}
+
+model DetailInformation {
+    id                     String   @id @default(cuid())
+    healthCertificationUrl String
+    IDCard                 String
+    temporaryAddress       String
+    city                   String
+    createdAt              DateTime @default(now())
+    updatedAt              DateTime @updatedAt
+}
+
+model IDCard {
+    id          String   @id @default(cuid())
+    cardNumber  String
+    frontOfUrl  String
+    backSideUrl String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
